@@ -1,0 +1,18 @@
+{{#extends 'base'}}
+
+{{#block "content"}}
+
+{{#each fruits}}
+<div style="border:1px solid black;">
+    <p>{{this}}</p>
+</div>
+{{/each}}
+
+{{#ifEquals favourite "apples"}}
+{{else}}
+<p>You will always fall sick</p>
+{{/ifEquals}}
+
+{{/block}}
+
+{{/extends}}
