@@ -1,0 +1,35 @@
+{{#extends 'base'}}
+
+
+{{#block "content"}}
+    <h1>BMI Calculator</h1>
+    <form method="POST">
+        <div>
+            <label class="form-label">Weight</label>
+            <input type="text" class="form-control" name="weight">
+        </div>
+
+        <div>
+            <label class="form-label">Height</label>
+            <input type="text" class="form-control" name="height">
+        </div>
+
+        <div>
+            <label class="form-label">Units of Measurement</label>
+            <div class="form-check">
+                <input type="radio" name="unit" value="metric">
+                <label>Metric</label>
+
+                <input type="radio" name="unit" value="imperial">
+                <label>Imperial</label>
+            </div>
+        </div>
+
+        <div>
+            <input type="submit" value="Calculate BMI" class="btn btn-primary">
+        </div>
+
+    </form>
+{{/block}}
+
+{{/extends}}

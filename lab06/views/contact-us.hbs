@@ -1,0 +1,66 @@
+{{#extends 'base'}}
+
+{{#block "content"}}
+<form method="POST">
+    {{!-- Text fields must have a unique name to identify the field --}}
+    <div>
+        <label class="form-label">Email:</label>
+        <input class="form-control" type="text" name="email">
+    </div>
+
+    <div class="mt-3">
+        <label class="form-label">First Name</label>
+        <input class="form-control" type="text" name="fname"/>
+    </div>
+
+    <div class="mt-3">
+        <label class="form-label">Last Name</label>
+        <input class="form-control" type="text" name="lname"/>
+    </div>
+
+    {{!-- Radio buttons --}}
+    <div class="mt-3">
+        <label class="form-label">Type of Enquiry</label>
+        <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" value="complaint" name="enquiry"/>
+            <label>Complaints</label>
+
+            <input type="radio" class="form-check-input" value="sales" name="enquiry"/>
+            <label>Sales</label>
+
+            <input type="radio" class="form-check-input" value="feedback" name="enquiry"/>
+            <label>Feedback</label>
+        </div>
+    </div>
+
+    {{!-- Checkboxes: Must convert the return into an array in the index.js --}}
+    <div class="mt-3">
+        <label class="form-label">How did you hear about us?</label>
+        <div class="form-check form-check-inline">
+            <input type="checkbox" class="form-check-input" name="hearAbout" value="social_media"/>
+            <label class="form-check-label">Social Media</label>
+
+            <input type="checkbox" class="form-check-input" name="hearAbout" value="word_of_mouth"/>
+            <label class="form-check-label">Word of Mouth</label>
+
+            <input type="checkbox" class="form-check-input" name="hearAbout" value="others"/>
+            <label class="form-check-label">Others</label>
+        </div>
+    </div>
+
+    {{!-- Dropdown list --}}
+    <div class="mt-3">
+        <label class="form-label">Country</label>
+        <select name="country" class="form-control">
+            <option value="singapore">Singapore</option>
+            <option value="malaysia">Malaysia</option>
+            <option value="thailand">Thailand</option>
+        </select>
+    </div>
+
+    {{!-- Use the POST method to get the Form Fields via Submit input --}}
+    <input type="submit" class="mt-3"/>
+</form>
+{{/block}}
+
+{{/extends}}
