@@ -10,13 +10,16 @@
                 <th>Category</th>
                 <th>Tags</th>
                 <th>Status</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             {{#each allPets}}
             <tr>
                 <td>{{this.id}}</td>
-                <td>{{this.name}}</td>
+                <td>
+                    <a href="/pet/{{this.id}}/update">{{this.name}}</a>
+                </td>
                 <td>{{this.category.name}}</td>
                 <td>
                     {{#each this.tags}}
@@ -24,6 +27,7 @@
                     {{/each}}
                 </td>
                 <td>{{this.status}}</td>
+                <td><a href="/pet/{{this.id}}/delete" class="btn btn-danger btn-sm">Delete</a></td>
             </tr>
             {{/each}}
         </tbody>
