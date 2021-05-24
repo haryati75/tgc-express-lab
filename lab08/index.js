@@ -13,6 +13,15 @@ const MongoUtil = require('./MongoUtil');
 
 const helpers = require('handlebars-helpers');
 
+// call DB to retrieve a food document by its Id
+async function getFoodById(id) {
+    let db = MongoUtil.getDB();
+    // find one will always return ONE object
+    return await db.collection('food').findOne({
+        '_id' : ObjectId(id)
+    })
+}
+
 async function main() {
 
     // 1. create the express application
@@ -47,6 +56,7 @@ async function main() {
     // 6. Connect to Mongo
     await MongoUtil.connect(process.env.MONGO_URI, 'food_tracker');
 
+    // *********************************************************************************
     // 7. Define the routes
 
     // root route
@@ -54,6 +64,7 @@ async function main() {
         res.send("Hello World")
     })
 
+    // render the form to allow user to add a new Food document
     app.get('/food/add', (req,res) => {
         res.render('add_food');
     })
@@ -61,6 +72,7 @@ async function main() {
     app.post('/food/add', async (req,res) => {
         // let foodName = req.body.foodName;
         // let calories = req.body.calories;
+        // let tags = req.body.tags;
         let {foodName, calories, tags} = req.body;
 
         // check if tags is undefined.
@@ -90,13 +102,7 @@ async function main() {
 
     // display the form to edit a food item
     app.get('/food/:foodid/edit', async (req, res) => {
-        let db = MongoUtil.getDB();
-        let foodId = req.params.foodid;
-        // findOne will always give you back one object
-        let foodRecord = await db.collection('food').findOne({
-            '_id' : ObjectId(foodId)
-        })
-
+        let foodRecord = await getFoodById(req.params.foodid);
         if (! Array.isArray(foodRecord.tags)) {
             foodRecord.tags = []
         }
@@ -124,11 +130,9 @@ async function main() {
         res.redirect('/food');
     })
 
+    // render the form that allows the user to delete a food document
     app.get('/food/:foodid/delete', async (req, res) => {
-        let db = MongoUtil.getDB();
-        let foodRecord = await db.collection('food').findOne({
-            '_id' : ObjectId(req.params.foodid)
-        })
+        let foodRecord = await getFoodById(req.params.foodid);
         res.render('delete_food', {
             foodRecord 
         })
@@ -142,6 +146,105 @@ async function main() {
         res.redirect('/food');
     })
 
+    // render the form that allows the user to add note
+    app.get('/food/:foodid/notes/add', async (req,res) => {
+        let foodRecord = await getFoodById(req.params.foodid);
+        res.render('add_note', {
+            foodRecord
+        })
+    })
+
+    app.post('/food/:foodid/notes/add', async (req,res) => {
+        let db = MongoUtil.getDB();
+        let noteContent = req.body.content;
+        await db.collection('food').updateOne({
+            '_id' : ObjectId(req.params.foodid)
+        }, {
+            '$push' : {
+                'notes'  : {
+                    '_id' : ObjectId(),
+                    'content' : noteContent
+                }
+            }
+        })
+        res.redirect('/food')
+    })
+
+    // see the notes and details of the food document
+    app.get('/food/:foodid', async (req,res) => {
+        let foodRecord = await getFoodById(req.params.foodid);
+        res.render('food_details', {
+            foodRecord
+        })
+    })
+
+    // display a form to allow user to update a note (sub-doc) for a Food Document
+    app.get('/food/notes/:noteid/edit', async (req,res) => {
+        let db = MongoUtil.getDB();
+        let noteId = req.params.noteid;
+        let foodRecord = await db.collection('food').findOne({
+            'notes._id' : ObjectId(noteId)
+        }, {
+            'projection' : {
+                'notes': {
+                    '$elemMatch' : {
+                        '_id' : ObjectId(noteId)
+                    }
+                }
+            }
+        })
+        let noteToEdit = foodRecord.notes[0];
+        res.render('edit_note', {
+            'note': noteToEdit
+        })
+    })
+
+    app.post('/food/notes/:noteid/edit', async (req,res) => {
+        let db = MongoUtil.getDB();
+        let noteId = req.params.noteid;
+        let foodRecord = await db.collection('food').findOne({
+            'notes._id' : ObjectId(noteId)
+        })
+        await db.collection('food').updateOne({
+            'notes._id': ObjectId(noteId)
+        }, {
+            '$set' : {
+                'notes.$.content' : req.body.content
+            }
+        })
+        res.redirect('/food/'+foodRecord._id)
+    })
+
+    // display a form to allow user to delete a note (sub-doc) for a Food Document
+    app.get('/food/notes/:noteid/delete', async (req,res) => {
+        let db = MongoUtil.getDB();
+        let noteId = req.params.noteid;
+        let foodRecord = await db.collection('food').findOne({
+            'notes._id' : ObjectId(noteId)
+        })
+        let noteToEdit = foodRecord.notes[0];
+        res.render('delete_note', {
+            'foodName': foodRecord.foodName,
+            'note': noteToEdit
+        })
+    })
+
+    app.post('/food/notes/:noteid/delete', async (req,res) => {
+        let db = MongoUtil.getDB();
+        let noteId = req.params.noteid;
+        let foodRecord = await db.collection('food').updateOne({
+            'notes._id' : ObjectId(noteId)
+        }, {
+            '$pull': {
+                'notes': {
+                    '_id': ObjectId(noteId)
+                }
+            }
+        })
+        res.redirect('/food/'+foodRecord._id);
+    })
+
+    // *********************************************************************************
     // 8. start the server
     app.listen(3000, ()=>{
         console.log("Server has started")
